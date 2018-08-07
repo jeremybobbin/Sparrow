@@ -39,8 +39,10 @@ module.exports = class Dao {
             ); `,
             `CREATE TABLE IF NOT EXISTS users ( \
                 id varchar(255) NOT NULL PRIMARY KEY, \
-                email varchar(512), \
-                password varchar(512) \
+                email varchar(512) NOT NULL UNIQUE, \
+                password varchar(512) NOT NULL, \
+                first varchar(255), \
+                last varchar(255) \
             ); `,
         ];
 
@@ -139,6 +141,38 @@ module.exports = class Dao {
             LIMIT 15; `
         );
     }
+
+    register(email, password, first, last) {
+        return this.query(
+            `INSERT INTO users (email, password, first, last) \
+            VALUES (${
+                [email, password, first, last]
+                    .map(val => val === null ? 'NULL' : "'" + val + "'")
+                    .join(', ')
+            }); `
+        )
+        .then(() => true)
+        .catch(() => false);
+    }
+
+    getUserInfo(email) {
+        return this.query(
+            `SELECT id, password, first, last FROM users WHERE email = '${email}'`
+        )
+        .then(result => result.lenght > 0 ? result[0].password : false)
+        .catch(() => false);
+    }
+
+    emailIsUnique(email) {
+        return this.query(`SELECT id FROM users WHERE email = '${email}'; `)
+            .then(r => r.length === 0)
+            .then(r => {
+                if(r) return r;
+                else throw 'That email is already in use.';
+            });
+    }
+
+
 }
 
 function formatSql(arr) {

@@ -1,9 +1,14 @@
+const port = 3001;
+const saltRounds = 10;
+
+
 const express = require('express');
+const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
+const pug = require('pug');
 
 const conf = require('./config.js');
 const Dao = require('./Dao.js');
-const pug = require('pug');
 
 const ms = conf.mySql;
 
@@ -18,10 +23,79 @@ app.use(express.static('public'))
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.use((req, res, next) => {
+    res.append('Access-Control-Allow-Origin', ['*']);
+    res.append('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.append('Access-Control-Allow-Headers', 'Content-Type');
+    next();
+});
+
 app.get('/', (req, res) => res.sendFile(__dirname + '/views/test.html'));
 
 app.get('/dashboard', (req, res) => {
     res.render('dashboard');
+});
+
+
+
+app.post('/register', (req, res) => {
+    const email = req.body.email,
+        password = req.body.password,
+        first = req.body.first || null,
+        last = req.body.last || null,
+        emailIsValid = validateEmail(email),
+        passwordIsValid = validatePassword(password);
+
+    if(!emailIsValid || !passwordIsValid) {
+        return res.json({
+            error: true,
+            message: !emailIsValid && !passwordIsValid ? 'Username and password fields are invalid' :
+                (passwordIsValid ? 'Email field is invalid.' : 'Password field is invalid.')
+        });
+    }
+
+    dao.emailIsUnique(email)
+        .then(r => {
+            console.log(r);
+            return bcrypt.hash(password, saltRounds)
+        })
+        .then(hash => dao.register(email, hash, first, last))
+        .then(() => res.json({message: 'You have successfully registered.', email, first, last}))
+        .catch(message => {
+            res.json({
+                error: true,
+                message
+            });
+        });
+});
+
+
+
+
+app.post('/login', (req, res) => {
+    const email = req.body.email,
+        password = req.body.password;
+    
+    let first, last;
+    
+    dao.getUserInfo(email)
+        .then(r => {
+            first = r.first || null;
+            last = r.last || null;
+            if(r.password) return bcrypt.compare(password, r.password);
+            else throw 'There is no account associated with that email.';
+        })
+        .then(r => {
+            console.log('Also Here.');
+            console.log(r);
+            if(r) res.json({email, first, last, message: 'You have been successfully logged in.'})
+            else throw 'Invalid username or password.';
+        })
+        .catch(message => res.json({
+            message,
+            error: true,
+            nigs: () =>  console.log('Here NOW.')
+        }))
 });
 
 app.get('/data', (req, res) => {
@@ -31,11 +105,8 @@ app.get('/data', (req, res) => {
         });
 });
 
-app.post('/register', (req, res) => {
-    const username = req.body.username;
-    const password = req.body.password;
 
-});
+
 
 app.post('/data', (req, res) => {
     let fields = req.body.fields;
@@ -68,6 +139,15 @@ app.get('/widget', (req, res) => {
         res.render('widget', {msg: genMessage(r.first, r.last, r.city), time: genTime(r.time)});
     });
 });
+
+function validateEmail(email) {
+    const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return typeof email === 'string' && emailRegex.test(email.toLowerCase());
+}
+
+function validatePassword(password) {
+    return typeof password === 'string' && password.length >= 8;
+}
 
 function genMessage(first, last, city) {
     let name;
@@ -108,4 +188,4 @@ function timeMsg(count, unit) {
 
 const divRound = (top, bot) => Math.round(top / bot);
 
-app.listen(3000, () => console.log('Example app listening on port 3000!'));
+app.listen(port, () => console.log('Example app listening on port: ' + port));

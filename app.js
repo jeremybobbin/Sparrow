@@ -56,15 +56,18 @@ app.post('/register', (req, res) => {
 
     dao.emailIsUnique(email)
         .then(r => {
-            console.log(r);
-            return bcrypt.hash(password, saltRounds)
+            if(r) return bcrypt.hash(password, saltRounds)
+            else throw 'That email is already in use.';
         })
         .then(hash => dao.register(email, hash, first, last))
-        .then(() => res.json({message: 'You have successfully registered.', email, first, last}))
-        .catch(message => {
+        .then(r => res.json({message: 'You have successfully registered.', email, first, last, id: r.insertId}))
+        .catch(err => {
             res.json({
                 error: true,
-                message
+                message: typeof err === 'string' ? 
+                    err
+                    :
+                    'An error has occurred. Please try again later'
             });
         });
 });
@@ -76,25 +79,23 @@ app.post('/login', (req, res) => {
     const email = req.body.email,
         password = req.body.password;
     
-    let first, last;
+    let first, last, id;
     
     dao.getUserInfo(email)
         .then(r => {
             first = r.first || null;
             last = r.last || null;
-            if(r.password) return bcrypt.compare(password, r.password);
+            id = r.id;
+            if(r && r.id) return bcrypt.compare(password, r.password);
             else throw 'There is no account associated with that email.';
         })
         .then(r => {
-            console.log('Also Here.');
-            console.log(r);
-            if(r) res.json({email, first, last, message: 'You have been successfully logged in.'})
+            if(r) res.json({id, email, first, last, message: 'You have been successfully logged in.'})
             else throw 'Invalid username or password.';
         })
         .catch(message => res.json({
             message,
             error: true,
-            nigs: () =>  console.log('Here NOW.')
         }))
 });
 

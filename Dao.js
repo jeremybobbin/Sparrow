@@ -38,7 +38,7 @@ module.exports = class Dao {
                 email varchar(512) \
             ); `,
             `CREATE TABLE IF NOT EXISTS users ( \
-                id varchar(255) NOT NULL PRIMARY KEY, \
+                id int NOT NULL PRIMARY KEY AUTO_INCREMENT, \
                 email varchar(512) NOT NULL UNIQUE, \
                 password varchar(512) NOT NULL, \
                 first varchar(255), \
@@ -143,23 +143,21 @@ module.exports = class Dao {
     }
 
     register(email, password, first, last) {
+        const values = [email, password, first, last]
+                    .map(val => val === null ? 'NULL' : "'" + val + "'")
+                    .join(', ');
+        console.log(values);
         return this.query(
             `INSERT INTO users (email, password, first, last) \
-            VALUES (${
-                [email, password, first, last]
-                    .map(val => val === null ? 'NULL' : "'" + val + "'")
-                    .join(', ')
-            }); `
-        )
-        .then(() => true)
-        .catch(() => false);
+            VALUES (${values}); `
+        );
     }
 
     getUserInfo(email) {
         return this.query(
             `SELECT id, password, first, last FROM users WHERE email = '${email}'`
         )
-        .then(result => result.lenght > 0 ? result[0].password : false)
+        .then(r => r[0])
         .catch(() => false);
     }
 

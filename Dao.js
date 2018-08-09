@@ -154,8 +154,10 @@ module.exports = class Dao {
     }
 
     getUserInfo(email) {
+        let sql = `SELECT id, password, first, last FROM users WHERE email = '${email}'`;
+        console.log(sql);
         return this.query(
-            `SELECT id, password, first, last FROM users WHERE email = '${email}'`
+            sql
         )
         .then(r => r[0])
         .catch(() => false);

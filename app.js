@@ -1,7 +1,7 @@
 const port = 3001;
 const saltRounds = 10;
 
-
+const axios = require('axios');
 const express = require('express');
 const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
@@ -76,27 +76,38 @@ app.post('/register', (req, res) => {
 
 
 app.post('/login', (req, res) => {
-    const email = req.body.email,
-        password = req.body.password;
+    const {username, password} = req.body;
+
+    let prom = axios({
+        method: 'post', //you can set what request you want to be
+        url: 'https://www.freshpeeps.com/drupal/api/system/connect',
+        data: null,
+        headers: {
+            'Content-Type': 'application/json'
+        }
+      });
+
+    prom.then((r) => console.log(r)).catch((r) => console.log(r));
+    // let first, last, id;
     
-    let first, last, id;
-    
-    dao.getUserInfo(email)
-        .then(r => {
-            first = r.first || null;
-            last = r.last || null;
-            id = r.id;
-            if(r && r.id) return bcrypt.compare(password, r.password);
-            else throw 'There is no account associated with that email.';
-        })
-        .then(r => {
-            if(r) res.json({id, email, first, last, message: 'You have been successfully logged in.'})
-            else throw 'Invalid username or password.';
-        })
-        .catch(message => res.json({
-            message,
-            error: true,
-        }))
+    // dao.getUserInfo(email)
+    //     .then(r => {
+    //         console.log(r);
+    //         if(r && r.id) {
+    //             first = r.first || null;
+    //             last = r.last || null;
+    //             id = r.id;
+    //             return bcrypt.compare(password, r.password)
+    //         } else throw 'There is no account associated with that email.';
+    //     })
+    //     .then(r => {
+    //         if(r) res.json({id, email, first, last, message: 'You have been successfully logged in.'})
+    //         else throw 'Invalid username or password.';
+    //     })
+    //     .catch(message => res.json({
+    //         message,
+    //         error: true,
+    //     }));
 });
 
 app.get('/data', (req, res) => {

@@ -3,11 +3,11 @@ const saltRounds = 10;
 
 const axios = require('axios');
 const express = require('express');
-const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
 const pug = require('pug');
 
 const conf = require('./config.js');
+const drup = require('./DrupalServer');
 const Dao = require('./Dao.js');
 
 const ms = conf.mySql;
@@ -39,10 +39,7 @@ app.get('/dashboard', (req, res) => {
 
 
 app.post('/register', (req, res) => {
-    const email = req.body.email,
-        password = req.body.password,
-        first = req.body.first || null,
-        last = req.body.last || null,
+    const {username, email, password} = req.body,
         emailIsValid = validateEmail(email),
         passwordIsValid = validatePassword(password);
 
@@ -54,21 +51,10 @@ app.post('/register', (req, res) => {
         });
     }
 
-    dao.emailIsUnique(email)
+    drup.register(username, email, password)
         .then(r => {
-            if(r) return bcrypt.hash(password, saltRounds)
-            else throw 'That email is already in use.';
-        })
-        .then(hash => dao.register(email, hash, first, last))
-        .then(r => res.json({message: 'You have successfully registered.', email, first, last, id: r.insertId}))
-        .catch(err => {
-            res.json({
-                error: true,
-                message: typeof err === 'string' ? 
-                    err
-                    :
-                    'An error has occurred. Please try again later'
-            });
+            if(r.sessId) return res.json({id: r.id, sessId: r.sessId, sessName: r.sessName});
+            else return res.json({error: true, message: r});
         });
 });
 
@@ -78,43 +64,25 @@ app.post('/register', (req, res) => {
 app.post('/login', (req, res) => {
     const {username, password} = req.body;
 
-    let prom = axios({
-        method: 'post', //you can set what request you want to be
-        url: 'https://www.freshpeeps.com/drupal/api/system/connect',
-        data: null,
-        headers: {
-            'Content-Type': 'application/json'
-        }
-      });
+    drup.logIn(username, password)
+        .then(r => {
+            if(r.sessId) return res.json({id: r.id,sessId: r.sessId, sessName: r.sessName});
+        });
+});
 
-    prom.then((r) => console.log(r)).catch((r) => console.log(r));
-    // let first, last, id;
-    
-    // dao.getUserInfo(email)
-    //     .then(r => {
-    //         console.log(r);
-    //         if(r && r.id) {
-    //             first = r.first || null;
-    //             last = r.last || null;
-    //             id = r.id;
-    //             return bcrypt.compare(password, r.password)
-    //         } else throw 'There is no account associated with that email.';
-    //     })
-    //     .then(r => {
-    //         if(r) res.json({id, email, first, last, message: 'You have been successfully logged in.'})
-    //         else throw 'Invalid username or password.';
-    //     })
-    //     .catch(message => res.json({
-    //         message,
-    //         error: true,
-    //     }));
+app.post('/logout', (req, res) => {
+    const {sessName, sessId} = req.body;
+
+    drup.logOut(sessName, sessId)
+        .then(r => {
+            if(r.sessId) return res.json({id: r.id,sessId: r.sessId, sessName: r.sessName});
+        });
 });
 
 app.get('/data', (req, res) => {
-    dao.getData(decodeURIComponent(req.query.url))
-        .then(r => {
-            res.json(r);
-        });
+    verify(req, res)
+        .then(r => dao.getData(decodeURIComponent(req.query.url))
+            .then(r => res.json(r)));
 });
 
 
@@ -197,6 +165,22 @@ function genTime(time) {
 function timeMsg(count, unit) {
     return count + ' ' + unit + (count > 1 ? 's' : '') + ' ago';
 }
+
+
+
+
+function verify(req, res) {
+    const {sessName, sessId} = req.body;
+    console.log(sessName);
+    drup.verify(sessName, sessId)
+        .then(r => {
+            if(!r) return res.status(401).send('Unauthorized');
+            return r;
+        });
+}
+
+
+
 
 const divRound = (top, bot) => Math.round(top / bot);
 

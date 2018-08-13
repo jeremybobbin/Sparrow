@@ -37,13 +37,6 @@ module.exports = class Dao {
                 last varchar(512), \
                 email varchar(512) \
             ); `,
-            `CREATE TABLE IF NOT EXISTS users ( \
-                id int NOT NULL PRIMARY KEY AUTO_INCREMENT, \
-                email varchar(512) NOT NULL UNIQUE, \
-                password varchar(512) NOT NULL, \
-                first varchar(255), \
-                last varchar(255) \
-            ); `,
         ];
 
         Promise.all(sql.map(string => this.query(string)))

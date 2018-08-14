@@ -17,15 +17,17 @@ module.exports = class DrupalServer {
 
     getHeaders(header) {
         const headers = { 'Content-Type': 'application/json' };
+        if(this.csrf) headers["X-CSRF-Token"] = this.csrf;
         for(let prop in header) {
             headers[prop] = header[prop];
         }
-        if(this.csrf) headers["X-CSRF-Token"] = this.csrf;
         return headers;
     }
 
     request(path, data, header = null) {
         let headers = this.getHeaders(header);
+        console.log('Headers: ');
+        console.log(headers);
         return axios({
             method: 'POST',
             url: this.getUrl(path),
@@ -55,21 +57,14 @@ module.exports = class DrupalServer {
  
 
     // If can register, returns sessionId, sessionName, uId ELSE returns Status Code
-    register(name, mail, password) {
-        return this.request('user/register', {name, mail, password})
+    register(name, mail, pass) {
+        return this.request('user/register', {name, mail, pass})
             .then(r => {
                 let cookieArray = r.headers['set-cookie'][0].split('; ');
-                let sess = cookieArray[0].split('=');
-                let sessId = sess[1];
-                let sessName = sess[0];
-                let id = r.data.uid;
-                return {
-                    id,
-                    sessId,
-                    sessName
-                };
+                let session = cookieArray[0];
+                return {session};
             })
-            .catch(r => r.response.status);
+            .catch(r => console.log(r.response.data.form_errors));
     }
 
 
@@ -78,15 +73,14 @@ module.exports = class DrupalServer {
         return this.request('user/login', {username, password})
             .then(r => {
                 this.csrf = r.data.token;
-                console.log(r.status);
                 if(r.data && r.data.user) return {
-                    id: r.data.user.uid,
-                    sessId: r.data.sessid,
-                    sessName: r.data.session_name,
+                    token: r.data.token,
+                    session: r.data.session_name + '=' + r.data.sessid,
+                    email: r.data.user.mail,
                 };
                 else throw 'Could not find user ID.';
             })
-            .catch(r => r.response.status);
+            .catch(r => ({message: r.response.data[0]}));
     }
 
     // IF LOGOUT SUCCESSFUL returns TRUE ELSE FALSE
@@ -97,16 +91,28 @@ module.exports = class DrupalServer {
     }
 
     // If valid returns uId and SESSION ELSE FALSE
-    verify(sessName, sessId) {
-        return this.request('system/connect', null, {"Cookie": sessName + '=' + sessId})
+    getUserInfo(session, token) {
+        let headers = {"Cookie": session, token};
+        return this.request('system/connect', null, headers)
             .then(r => {
                 if(r.data && r.data.user) {
                     if(r.data.user.uid === 0) throw 'Invalid Session.';
                     else return {
-                        id: r.data.user.uid,
-                        sessId: r.data.sessid,
-                        sessName: r.data.session_name,
+                        username: r.data.user.name,
+                        email: r.data.user.mail,
                     };   
+                }
+            })
+            .catch(e => console.log(e));
+    }
+
+    // Takes Session, if valid, returns uID ELSE FALSE.
+    verify(session) {
+        return this.request('system/connect', null, {"Cookie": session})
+            .then(r => {
+                if(r.data && r.data.user) {
+                    if(r.data.user.uid === 0) throw 'Invalid Session.';
+                    else return r.data.user.uid;   
                 }
             })
             .catch(e => false);

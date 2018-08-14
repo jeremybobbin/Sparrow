@@ -45,17 +45,13 @@ app.post('/register', (req, res) => {
 
     if(!emailIsValid || !passwordIsValid) {
         return res.json({
-            error: true,
             message: !emailIsValid && !passwordIsValid ? 'Username and password fields are invalid' :
                 (passwordIsValid ? 'Email field is invalid.' : 'Password field is invalid.')
         });
     }
 
     drup.register(username, email, password)
-        .then(r => {
-            if(r.sessId) return res.json({id: r.id, sessId: r.sessId, sessName: r.sessName});
-            else return res.json({error: true, message: r});
-        });
+        .then(r => res.json(r));
 });
 
 
@@ -63,20 +59,15 @@ app.post('/register', (req, res) => {
 
 app.post('/login', (req, res) => {
     const {username, password} = req.body;
-
     drup.logIn(username, password)
-        .then(r => {
-            if(r.sessId) return res.json({id: r.id,sessId: r.sessId, sessName: r.sessName});
-        });
+        .then(r => res.json(r));
 });
 
 app.post('/logout', (req, res) => {
     const {sessName, sessId} = req.body;
 
     drup.logOut(sessName, sessId)
-        .then(r => {
-            if(r.sessId) return res.json({id: r.id,sessId: r.sessId, sessName: r.sessName});
-        });
+        .then(r => res.json(r));
 });
 
 app.get('/data', (req, res) => {
@@ -86,6 +77,11 @@ app.get('/data', (req, res) => {
 });
 
 
+app.post('/userinfo', (req, res) => {
+    console.log(req.body);
+    drup.getUserInfo(req.body.session, req.body.token)
+        .then(r => res.json(r));
+});
 
 
 app.post('/data', (req, res) => {
@@ -170,9 +166,9 @@ function timeMsg(count, unit) {
 
 
 function verify(req, res) {
-    const {sessName, sessId} = req.body;
-    console.log(sessName);
-    drup.verify(sessName, sessId)
+    let {session} = req.body;
+    console.log(session);
+    drup.verify(session)
         .then(r => {
             if(!r) return res.status(401).send('Unauthorized');
             return r;

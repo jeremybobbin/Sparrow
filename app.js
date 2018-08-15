@@ -6,13 +6,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const pug = require('pug');
 
-const conf = require('./config.js');
-const drup = require('./DrupalServer');
-const Dao = require('./Dao.js');
+const drup = require('./models/DrupalServer');
+const dao = require('./models/Dao');
 
-const ms = conf.mySql;
-
-const dao = new Dao(ms.database, ms.user, ms.password, ms.socketPath);
 
 
 const app = express();
@@ -27,8 +23,12 @@ app.use((req, res, next) => {
     res.append('Access-Control-Allow-Origin', ['*']);
     res.append('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
     res.append('Access-Control-Allow-Headers', 'Content-Type');
+    res.append('Access-Control-Allow-Headers', 'X-CSRF-Token');
+    res.append('Access-Control-Allow-Headers', 'Session');
     next();
 });
+
+app.use(require('./routes'));
 
 app.get('/', (req, res) => res.sendFile(__dirname + '/views/test.html'));
 
@@ -64,9 +64,8 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/logout', (req, res) => {
-    const {sessName, sessId} = req.body;
-
-    drup.logOut(sessName, sessId)
+    let session = req.get('session');
+    drup.logOut(session)
         .then(r => res.json(r));
 });
 
@@ -78,9 +77,8 @@ app.get('/data', (req, res) => {
 
 
 app.post('/userinfo', (req, res) => {
-    console.log(req.body);
-    drup.getUserInfo(req.body.session, req.body.token)
-        .then(r => res.json(r));
+    drup.getUserInfo(req.get('Session'), req.get('X-CSRF-Token'))
+        .then(r => r ? res.json(r) : res.send('Dang'));
 });
 
 

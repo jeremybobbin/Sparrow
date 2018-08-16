@@ -12,8 +12,8 @@ router.put('/', (req, res) => dao.put(req.userId, req.body)
     .catch(() => res.sendStatus(500)));
 
 router.post('/', (req, res) => dao.post(req.userId, req.body)
-    .then(() => res.sendStatus(200))
-    .catch(() => res.sendStatus(500)));
+    .then(r => res.json(r.insertId))
+    .catch(r => console.log(r)));
 
 router.delete('/', (req, res) => dao.delete(req.userId, req.body)
     .then(() => res.sendStatus(200))

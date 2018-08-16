@@ -24,13 +24,15 @@ module.exports = class CampaignDao extends Dao {
 
     get(userId) {
         return this.query(
-            `SELECT * FROM campaigns AS c WHERE c.userId = ${userId}`
+            `SELECT id, name, url, showing, tracking, delay, effect, location, counters, initialWait \
+            FROM campaigns AS c WHERE c.userId = ${userId}`
         );
     }
 
     // CAMPAIGN: {}
     put(userId, campaign) {
         let id = campaign.id;
+        campaign.userId = userId;
         let pairs = [];
         for(let k in campaign) {
             let v = campaign[k];
@@ -42,12 +44,11 @@ module.exports = class CampaignDao extends Dao {
     }
 
     // CAMPAIGN: {url, name}
-    post(userId, campaigns) {
-        if(!Array.isArray(campaigns)) campaigns = [campaigns];
-        if(campaigns.find(c => !c.name || !c.url) !== undefined) throw 'Incomplete Campaigns';
-        let values = campaigns.map(c => `(${userId}, '${c.url}', '${c.name}')`);
+    post(userId, campaign) {
+        if(!campaign.name || !campaign.url) throw 'Incomplete Campaigns';
+        const values = `(${userId}, '${campaign.url}', '${campaign.name}')`;
         return this.query(
-            `INSERT INTO campaigns (userId, url, name) VALUES ${values.join(', ')};`
+            `INSERT INTO campaigns (userId, url, name) VALUES ${values};`
         );
     }
 

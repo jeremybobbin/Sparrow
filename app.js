@@ -24,13 +24,12 @@ app.use((req, res, next) => {
     res.append('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
     res.append('Access-Control-Allow-Headers', 'Content-Type');
     res.append('Access-Control-Allow-Headers', 'X-CSRF-Token');
-    res.append('Access-Control-Allow-Headers', 'Session');
+    res.append('Access-Control-Allow-Headers', 'session');
     next();
 });
 
 app.use(require('./routes'));
 
-app.get('/', (req, res) => res.sendFile(__dirname + '/views/test.html'));
 
 app.get('/dashboard', (req, res) => {
     res.render('dashboard');

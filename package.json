@@ -13,6 +13,7 @@
     "bcrypt": "^3.0.0",
     "body-parser": "^1.18.3",
     "express": "^4.16.3",
+    "metaphone": "^1.0.3",
     "mysql": "^2.16.0",
     "pug": "^2.0.3"
   }

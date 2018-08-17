@@ -106,11 +106,9 @@ module.exports = class DrupalServer {
 
     // Takes Session, if valid, returns uID ELSE FALSE.
     verify(session, token) {
-        console.log('YOlo from here:  ' + token);
         const headers = {"Cookie": session, "X-CSRF-Token": token};
         return this.request('system/connect', null, headers)
             .then(r => {
-                console.log(r.data);
                 if(r.data && r.data.user) {
                     if(r.data.user.uid === 0) throw 'Invalid Session.';
                     else return r.data.user.uid;   

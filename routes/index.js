@@ -2,17 +2,18 @@ const router = require('express').Router();
 
 const drup = require('../models/DrupalServer');
 
-router.use('/campaigns', (req, res, next) => {
-    console.log(req.headers);
+const verify = (req, res, next) => {
     const session = req.get('Session');
     const token = req.get('X-CSRF-Token');
     drup.verify(session, token)
         .then(r => {
-            console.log(r);
             if(r) req.userId = r;
             else return res.sendStatus(401);
             next();
         });
-}, require('./campaigns'));
+}
+
+router.use('/campaigns', verify, require('./campaigns'));
+router.use('/leads', verify, require('./leads'));
 
 module.exports = router;

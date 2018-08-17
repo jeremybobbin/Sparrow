@@ -98,7 +98,6 @@ app.post('/data', (req, res) => {
 app.post('/lead', (req, res) => {
     console.log('POST on /lead');
     let r = req.body;
-    console.log(r);
     let ip = req.ip === '::1' ? '67.204.145.178' : req.ip;
     dao.putLead(r.url, ip, r.firstname, r.lastname, r.email);
     res.send('Success.');
@@ -164,7 +163,6 @@ function timeMsg(count, unit) {
 
 function verify(req, res) {
     let {session} = req.body;
-    console.log(session);
     drup.verify(session)
         .then(r => {
             if(!r) return res.status(401).send('Unauthorized');

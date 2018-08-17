@@ -9,10 +9,10 @@ module.exports = class CampaignDao extends Dao {
     init() {
         let sql = 'CREATE TABLE IF NOT EXISTS campaigns ( \
             id INT NOT NULL AUTO_INCREMENT, userId INT NOT NULL, name VARCHAR(512) NOT NULL, \
-            `url` VARCHAR(512) NOT NULL, `showing` BOOLEAN DEFAULT TRUE, \
-            `tracking` BOOLEAN DEFAULT TRUE, \
+            `url` VARCHAR(512) NOT NULL, `enabled` BOOLEAN DEFAULT TRUE, \
+            `tracking` BOOLEAN DEFAULT TRUE, `message` VARCHAR(512), \
             `delay` TINYINT NOT NULL DEFAULT 3, `effect` VARCHAR(255) DEFAULT \'fade\' , \
-            `location` VARCHAR(255) NOT NULL DEFAULT \'bottom-left\', \
+            `position` VARCHAR(255) NOT NULL DEFAULT \'bottom-left\', \
             `counters` BOOLEAN NOT NULL DEFAULT FALSE, `initialWait` TINYINT DEFAULT 3, \
             PRIMARY KEY(id) \
         ); ';
@@ -23,10 +23,21 @@ module.exports = class CampaignDao extends Dao {
     }
 
     get(userId) {
+        let sql = `SELECT c.id AS id, name, url, enabled, tracking, delay, effect, position, \
+        counters, message, initialWait, COUNT(l.id) AS leads \
+        FROM campaigns AS c \
+        LEFT JOIN leads AS l ON c.id = l.campaignId \
+        WHERE c.userId = ${userId} \
+        GROUP BY c.id;`;
+        console.log(sql);
         return this.query(
-            `SELECT id, name, url, showing, tracking, delay, effect, location, counters, initialWait \
-            FROM campaigns AS c WHERE c.userId = ${userId}`
-        );
+            sql
+        ).then(r => {
+            console.log('USER ID:  ' + userId);
+            console.log('GET() on cDao');
+            console.log(r);
+            return r;
+        })
     }
 
     // CAMPAIGN: {}
@@ -36,10 +47,13 @@ module.exports = class CampaignDao extends Dao {
         let pairs = [];
         for(let k in campaign) {
             let v = campaign[k];
+            v = v === true ? 1 : (v === false ? 0 : v);
             pairs.push(`${k} = ${Number.isInteger(parseInt(v)) ? v : "'" + v + "'"}`);
         }
+        let sql = `UPDATE campaigns SET ${pairs.join(', ')} WHERE id = ${id};`;
+        console.log(sql);
         return this.query(
-            `UPDATE campaigns SET ${pairs.join(', ')} WHERE id = ${id};`
+            sql
         );
     }
 
@@ -53,6 +67,8 @@ module.exports = class CampaignDao extends Dao {
     }
 
     delete(userId, ids) {
+        console.log('ID\'s:   ');
+        console.log(ids);
         const values = ids.join(', ');
         let sql =`DELETE FROM campaigns WHERE id IN (${values}) AND userId = ${userId};`;
         return this.query(

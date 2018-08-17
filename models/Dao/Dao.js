@@ -12,24 +12,6 @@ module.exports = class Dao {
 
     init() {
         let sql = [
-            'CREATE TABLE IF NOT EXISTS urls ( id INT NOT NULL AUTO_INCREMENT, userId INT NOT NULL, \
-                `url` VARCHAR(512) NOT NULL, `showing` BOOLEAN DEFAULT TRUE, \
-                `tracking` BOOLEAN DEFAULT TRUE, \
-                `delay` TINYINT NOT NULL DEFAULT 3, `effect` VARCHAR(255) DEFAULT \'fade\' , \
-                `location` VARCHAR(255) NOT NULL DEFAULT \'bottom-left\', \
-                `counters` BOOLEAN NOT NULL DEFAULT FALSE, `initialWait` TINYINT DEFAULT 3, \
-                PRIMARY KEY(id) ); ',
-            `CREATE TABLE IF NOT EXISTS leads ( \
-                urlId varchar(255) NOT NULL, \
-                ip varchar(512) NOT NULL, \
-                first varchar(512), \
-                last varchar(512), \
-                email varchar(512), \
-                city varchar(255), \
-                region varchar(255), \
-                country varchar(255), \
-                time DATETIME DEFAULT CURRENT_TIMESTAMP \
-            ); `,
             `CREATE TABLE IF NOT EXISTS formNames ( \
                 urlId varchar(255) NOT NULL PRIMARY KEY, \
                 first varchar(512), \
@@ -146,7 +128,6 @@ module.exports = class Dao {
         const values = [email, password, first, last]
                     .map(val => val === null ? 'NULL' : "'" + val + "'")
                     .join(', ');
-        console.log(values);
         return this.query(
             `INSERT INTO users (email, password, first, last) \
             VALUES (${values}); `
@@ -155,7 +136,6 @@ module.exports = class Dao {
 
     getUserInfo(email) {
         let sql = `SELECT id, password, first, last FROM users WHERE email = '${email}'`;
-        console.log(sql);
         return this.query(
             sql
         )

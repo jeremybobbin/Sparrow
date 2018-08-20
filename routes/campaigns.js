@@ -10,6 +10,13 @@ router.get('/', (req, res) => dao.get(req.userId)
         console.log(r);
     }));
 
+router.get('/config', (req, res) => dao.getConfig(req.query.url)
+    .then(r => {
+        console.log('/Campaigns/Config has been accessed.')
+        return res.json(r);
+    }));
+
+
 router.put('/', (req, res) => dao.put(req.userId, req.body)
     .then(() => res.sendStatus(200))
     .catch(r => {
@@ -21,6 +28,7 @@ router.put('/', (req, res) => dao.put(req.userId, req.body)
 router.post('/', (req, res) => dao.post(req.userId, req.body)
     .then(r => res.json(r.insertId))
     .catch(r => console.log(r)));
+
 
 router.delete('/', (req, res) => dao.delete(req.userId, req.body)
     .then(() => res.sendStatus(200))

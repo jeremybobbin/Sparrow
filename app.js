@@ -15,18 +15,25 @@ const app = express();
 
 app.set('view engine', 'pug')
 
-app.use(express.static('public'))
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
 app.use((req, res, next) => {
     res.append('Access-Control-Allow-Origin', ['*']);
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     res.append('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
     res.append('Access-Control-Allow-Headers', 'Content-Type');
     res.append('Access-Control-Allow-Headers', 'X-CSRF-Token');
     res.append('Access-Control-Allow-Headers', 'session');
     next();
 });
+
+
+
+app.use('/dashbaord', express.static('public'));
+app.use('/login', express.static('public'));
+app.use('/logout', express.static('public'));
+app.use('/leads',express.static('public'));
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(require('./routes'));
 
@@ -35,7 +42,7 @@ app.get('/dashboard', (req, res) => {
     res.render('dashboard');
 });
 
-
+app.get('/script', (req, res) => res.sendFile(__dirname + '/public/sparrow.js'));
 
 app.post('/register', (req, res) => {
     const {username, email, password} = req.body,
@@ -52,8 +59,6 @@ app.post('/register', (req, res) => {
     drup.register(username, email, password)
         .then(r => res.json(r));
 });
-
-
 
 
 app.post('/login', (req, res) => {

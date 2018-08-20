@@ -65,13 +65,14 @@ module.exports = class Dao {
     }
 
     getData(url) {
+        console.log('getData has been called')
         return this.query(
             `SELECT name.first AS fName, name.last AS lName, name.email \
             AS eName,id.first AS fId, id.last AS lId, id.email AS eId, \
-            urls.widget, urls.show, urls.delay, urls.effect, urls.location, \
-            urls.show_counters, urls.initial_wait \
+            widget, show, delay, effect, location, \
+            counters, initialWait \
             FROM formNames AS name \
-            JOIN urls ON name.urlId = urls.id \
+            JOIN campaigns AS c ON name.urlId = c.id \
             JOIN formIds AS id \
             ON urls.id = id.urlId \
             WHERE urls.url = '${url}'`

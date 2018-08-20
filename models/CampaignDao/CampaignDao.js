@@ -12,7 +12,7 @@ module.exports = class CampaignDao extends Dao {
             `url` VARCHAR(512) NOT NULL, `enabled` BOOLEAN DEFAULT TRUE, \
             `tracking` BOOLEAN DEFAULT TRUE, `message` VARCHAR(512), \
             `delay` TINYINT NOT NULL DEFAULT 3, `effect` VARCHAR(255) DEFAULT \'fade\' , \
-            `position` VARCHAR(255) NOT NULL DEFAULT \'bottom-left\', \
+            `location` VARCHAR(255) NOT NULL DEFAULT \'bottom-left\', \
             `counters` BOOLEAN NOT NULL DEFAULT FALSE, `initialWait` TINYINT DEFAULT 3, \
             PRIMARY KEY(id) \
         ); ';
@@ -74,5 +74,13 @@ module.exports = class CampaignDao extends Dao {
         return this.query(
             sql
         );
+    }
+
+    getConfig(url) {
+        return this.query(
+            `SELECT enabled, tracking, message, delay, effect, location, counters, initialWait, FROM campaigns WHERE url = '${url}';`
+        )
+        .then(r => r[0])
+        .catch(r => false);
     }
 }

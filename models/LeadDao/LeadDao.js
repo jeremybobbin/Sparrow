@@ -3,7 +3,7 @@ const metaphone = require('metaphone');
 const Dao = require('../Dao/Dao');
 
 console.log('Metaphone test');
-console.log(metaphone('192.384'));
+console.log(metaphone('Bob Martin Phillidelphia'));
 
 module.exports = class LeadDao extends Dao {
 

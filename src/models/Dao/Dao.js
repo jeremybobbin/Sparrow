@@ -2,11 +2,11 @@ const mysql = require('mysql');
 const axios = require('axios');
 
 const config = require('../../config');
+const db = require('../DataBase');
 
 module.exports = class Dao {
 
     constructor() {
-        this.conn = require('./Connection');
         this.init();
     }
 
@@ -34,11 +34,7 @@ module.exports = class Dao {
     }
 
     query(sql) {
-        return new Promise((resolve, reject) => {
-            this.conn.query(sql, (err, res) => {
-                err ? reject(err) : resolve(res);
-            });
-        });
+        return db.query(sql);
     }
 
     getUrlId(url) {

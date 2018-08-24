@@ -20,15 +20,3 @@ config.saltRounds = get('SALT_ROUNDS');
 
 module.exports = config;
 
-
-// PassengerBaseURI    /
-// PassengerAppRoot    /home/freshpeeps/test/sparrow
-
-// PassengerAppType    node
-// PassengerStartupFile    app.js
-
-// )#{s[M_dRIp?
-
-// RewriteRule "!^/?drupal" - [L,NC]
-
-// "^/((login|dashboard|register|leads)(/.*)?)?$"

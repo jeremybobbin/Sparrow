@@ -17,5 +17,8 @@
     "metaphone": "^1.0.3",
     "mysql": "^2.16.0",
     "pug": "^2.0.3"
+  },
+  "devDependencies": {
+    "jest": "^23.5.0"
   }
 }

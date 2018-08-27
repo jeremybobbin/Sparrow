@@ -1,6 +1,6 @@
 const router = require('express').Router();
 
-const dao = require('../models/LeadDao');
+const dao = require('../models/Leads');
 
 
 router.get('/', (req, res) => dao.get(req.query.id, req.query.limit, req.query.offset)

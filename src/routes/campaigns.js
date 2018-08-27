@@ -1,6 +1,6 @@
 const router = require('express').Router();
 
-const dao = require('../models/CampaignDao');
+const dao = require('../models/Campaigns');
 
 
 router.get('/', (req, res) => dao.get(req.userId)

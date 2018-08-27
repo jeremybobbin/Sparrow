@@ -1,7 +1,7 @@
 module.exports = class Query {
-    constructor(callback, string) {
-        this.string = string;
-        this.values;
+    constructor(sql, args) {
+        this.sql = sql;
+        this.values = args || [];
         this.timeout = 5000;
         this.isStream = false;
     }
@@ -24,8 +24,8 @@ module.exports = class Query {
     }
 
     getValues() {
-        const {string, values, timeout} = this;
-        return {string, values, timeout};
+        const {sql, values, timeout} = this;
+        return {sql, values, timeout};
     }
 }
 

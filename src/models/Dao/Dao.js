@@ -1,44 +1,26 @@
 const mysql = require('mysql');
 const axios = require('axios');
 
-const config = require('../../config');
-const db = require('../DataBase');
-
 module.exports = class Dao {
 
-    constructor() {
-        this.init();
+    constructor(db) {
+        this.db = db;
     }
 
-    init() {
-        let sql = [
-            `CREATE TABLE IF NOT EXISTS formNames ( \
-                urlId varchar(255) NOT NULL PRIMARY KEY, \
-                first varchar(512), \
-                last varchar(512), \
-                email varchar(512) \
-            ); `,
-            `CREATE TABLE IF NOT EXISTS formIds ( \
-                urlId varchar(255) NOT NULL PRIMARY KEY, \
-                first varchar(512), \
-                last varchar(512), \
-                email varchar(512) \
-            ); `,
-        ];
-
+    init(sql) {
         Promise.all(sql.map(string => this.query(string)))
             .then(() =>  {
                 console.log('Successfully created tables.')
-            })
-            .catch(console.log);
+            }).catch(err => console.log(err));
     }
 
-    query(sql) {
-        return db.query(sql);
+    query(sql, args) {
+        if(args) return this.db.query(sql, args);
+        return this.db.query(sql);
     }
 
     getUrlId(url) {
-        return this.query(`SELECT id FROM urls WHERE url = '${url}'`)
+        return this.query(`SELECT id FROM campaigns WHERE url = ?`, url)
             .then(results => {
                 if(results && results[0] && results[0].id) {
                     return results[0].id;

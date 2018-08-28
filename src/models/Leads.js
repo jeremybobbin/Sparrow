@@ -1,22 +1,36 @@
 const metaphone = require('metaphone');
 
+const Lead = require('./Lead');
 const dao = require('./Dao');
 
 module.exports = class Leads {
     static get(cId, limit = 10, offset = 0) {
+        if(cId === null || cId === undefined || cId === 'null') throw new Error('CampaignID is undefined');
         if(limit > 100) throw new Error('Limit is too high.');
         let sql = `SELECT id, ip, first, last, email, city, region, country, time FROM leads \
                     WHERE campaignId = ? LIMIT ? OFFSET ?;`;
         return dao.query(sql, [cId, limit, offset])
-            .then(({results}) => {
-
-            });
+            .then(({results}) => results);
     }
 
     static toLead(obj) {
         const lead = new Lead();
         Object.keys(obj).forEach(k => lead.set(k, obj[k]));
         return lead;
+    }
+
+    //Takes a URL and random number and returns random lead message.
+    getOneFormatted(url, rand) {
+        const sql = `SELECT first, last, city, region, time FROM leads AS l \
+            JOIN campaigns AS c ON l.urlId = c.id \
+            WHERE c.url = ? ORDER BY time DESC LIMIT 20;`;
+        dao.query(sql, url)
+            .then(({results}) => results[Math.floor(results.length * rand)])
+            .then(l => {
+                const message = Lead.genMessage(l.first, l.last, l.city);
+                const time = Lead.genTime(l.time);
+                return {msg, time};
+            })
     }
 
     static post(lead) {
@@ -53,5 +67,4 @@ module.exports = class Leads {
                     WHERE s.value LIKE '%?%'`;
             dao.query(sql, [string]);
     }
-
 }

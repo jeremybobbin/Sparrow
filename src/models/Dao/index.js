@@ -7,13 +7,13 @@ const db = new DataBase(user, password, database);
 
 const init = [
     'CREATE TABLE IF NOT EXISTS formNames ( \
-        `urlId` varchar(255) NOT NULL PRIMARY KEY, \
+        `campaignId` varchar(255) NOT NULL PRIMARY KEY, \
         `first` varchar(512), \
         `last` varchar(512), \
         `email` varchar(512) \
     ); ',
     'CREATE TABLE IF NOT EXISTS formIds ( \
-        `urlId` varchar(255) NOT NULL PRIMARY KEY, \
+        `campaignId` varchar(255) NOT NULL PRIMARY KEY, \
         `first` varchar(512), \
         `last` varchar(512), \
         `email` varchar(512) \
@@ -48,7 +48,7 @@ const init = [
     'CREATE TABLE IF NOT EXISTS sound ( \
         `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY, \
         `value` VARCHAR(512) \
-    )'
+    );'
 ];
 const dao = new Dao(db);
 

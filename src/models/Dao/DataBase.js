@@ -50,7 +50,6 @@ module.exports = class DataBase {
         let connection;
         this.queryObj = new Query(sql, args);
         const values = this.queryObj ? this.queryObj.getValues() : {sql};
-        console.log(values);
         return this.getConnection()
             .then(c => connection = c)
             .then(() => this.queryObj && this.queryObj.isStream

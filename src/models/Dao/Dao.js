@@ -15,6 +15,7 @@ module.exports = class Dao {
     }
 
     query(sql, args) {
+        if(!Array.isArray(args)) args = [args];
         if(args) return this.db.query(sql, args);
         return this.db.query(sql);
     }
@@ -43,7 +44,6 @@ module.exports = class Dao {
     }
 
     getData(url) {
-        console.log('getData has been called')
         return this.query(
             `SELECT name.first AS fName, name.last AS lName, name.email \
             AS eName,id.first AS fId, id.last AS lId, id.email AS eId, \

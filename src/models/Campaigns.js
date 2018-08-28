@@ -12,16 +12,17 @@ module.exports = class Campaigns {
             GROUP BY c.id;`;
         return new Promise((resolve, reject) => {
             dao.query(sql, [userId])
-                .then(({results, fields}) => {
-                    if(results === undefined) reject(new Error('Campaign is null'));
-                    resolve({results, fields});
-                });
+                .then(({results, fields}) => resolve(results))
+                .catch(() => reject());
         });
     }
 
+    static getIdByUrl(url) {
+        const sql = `SELECT id FROM campaigns WHERE url = ?;`;
+        return dao.query(sql, [url]);
+    }
+
     static toCampaign(obj) {
-        console.log('Nigges');
-        console.log(obj);
         if(obj === undefined || obj === null) return;
         let c = new Campaign();
         Object.keys(obj).forEach(k => c.set(k, obj[k]));
@@ -49,9 +50,7 @@ module.exports = class Campaigns {
             if(!campaign.name || !campaign.url) reject(new Error('Incomplete Campaign Object.'));
             const {string, values} = campaign.getInsertQuery();
             dao.query(string, values)
-                .then(({results, fields}) => {
-                    resolve(results.insertId);
-                })
+                .then(({results}) => resolve(results.insertId))
                 .catch(reject);
         });
     }

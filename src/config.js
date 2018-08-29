@@ -1,6 +1,11 @@
 require('dotenv').config();
-
-const get = (prop) => process.env[prop];
+let defaults = {
+    'DB_NAME': 'sparrow',
+    'DB_USER': 'root',
+    'DB_PASSWORD': '',
+    'PORT': 3001
+};
+const get = (prop) => defaults[prop] || process.env[prop];
 
 const config = {};
 

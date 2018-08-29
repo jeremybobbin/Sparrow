@@ -69,4 +69,13 @@ app.get('/widget', (req, res) => {
         .catch(err => res.sendStatus(500));
 });
 
+app.get('/throw', (req, res) => {
+    throwError();
+});
+
+function throwError() {
+    let err= new Error('This is an error.');
+    throw err;
+}
+
 module.exports = app;

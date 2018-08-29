@@ -21,7 +21,7 @@ router.get('/data', (req, res) => {
 });
 
 
-router.post('/userinfo', (req, res) => {
+router.post('/info', (req, res) => {
     drup.getUserInfo(req.get('Session'), req.get('X-CSRF-Token'))
         .then(r => r ? res.json(r) : res.send('Dang'))
         .catch(() => res.sendStatus(500));

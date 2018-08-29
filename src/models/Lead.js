@@ -9,6 +9,7 @@ module.exports = class Leads {
         this.region = region;
         this.country = country;
         this.time = time;
+        this.campaignId = campaignId;
     }
 
     set(k, v) {
@@ -16,9 +17,15 @@ module.exports = class Leads {
     }
 
     getValues() {
-        return Object.keys(this)
-            .filter(k => typeof k !== 'function')
-            .map(k => this[k]);
+        return [
+            this.campaignId,
+            this.first,
+            this.last,
+            this.email,
+            this.city,
+            this.region,
+            this.country
+        ];
     }
 
     static genMessage(first, last, city) {

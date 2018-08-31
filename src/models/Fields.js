@@ -2,21 +2,42 @@ const dao = require('./Dao');
 
 module.exports = class Fields {
     static get(url) {
+
+        if(url === null || url === undefined) throw 'Null URL';
+
         const sql = `SELECT n.first AS firstName, n.last AS lastName, \
             n.email AS emailName, i.first AS firstId, i.last as lastId, \
-            i.email AS emailId \
-            FROM fields FROM formNames AS n \
+            i.email AS emailId FROM formNames AS n \
             JOIN formIds AS i ON n.campaignId = i.campaignId \
-            JOIN campaigns AS c ON i.campaignId = c.id
+            JOIN campaigns AS c ON i.campaignId = c.id \
             WHERE c.url = ?;`;
-        return dao.query(sql, [url]);
+        return dao.query(sql, [url])
+            .then(({results}) => results[0])
+            .then(({firstName, lastName, emailName, firstId, lastId, emailId}) => ({
+                firstname: {
+                    id: firstId,
+                    name: firstName
+                },
+                lastname: {
+                    id: lastId,
+                    name: lastName
+                },
+                email: {
+                    id: emailId,
+                    name: emailName
+                }
+            }));
     }
 
-    set(firstName, lastName, emailName, firstId, lastId, emailId) {
-        const sql1 = `INSERT INTO formNames (first, last, email) VALUES (?,?,?);`;
-        const sql2 = `INSERT INTO formIds (first, last, email) VALUES (?,?,?);`;
-        return dao.query(sql1, [firstName, lastName, emailName])
-            .then(dao.query(sql2, [firstId, lastId, emailId]))
-            .then(({results})=> results);
+    static set(url, firstName, lastName, emailName, firstId, lastId, emailId) {
+        let cId;
+        const getId = `SELECT id FROM campaigns WHERE url = ?;`;
+        const setNames = `INSERT INTO formNames (campaignId, first, last, email) VALUES (?,?,?,?);`;
+        const setIds = `INSERT INTO formIds (campaignId, first, last, email) VALUES (?,?,?,?);`;
+        
+        return dao.query(getId, [url])
+            .then(({results}) => cId = results[0].id)
+            .then(() => dao.query(setNames, [cId, firstName, lastName, emailName]))
+            .then(() => dao.query(setIds, [cId, firstId, lastId, emailId]));
     }
 }

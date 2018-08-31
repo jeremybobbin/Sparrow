@@ -3,6 +3,7 @@ const axios = require('axios');
 
 const config = require('../config');
 const Lead = require('./Lead');
+const Campaigns = require('./Campaigns');
 const dao = require('./Dao');
 
 module.exports = class Leads {
@@ -25,31 +26,32 @@ module.exports = class Leads {
     }
 
     //Takes a URL and random number and returns random lead message.
-    getOneFormatted(url, rand) {
+    static getOneFormatted(url, rand) {
         const sql = `SELECT first, last, city, region, time FROM leads AS l \
-            JOIN campaigns AS c ON l.urlId = c.id \
+            JOIN campaigns AS c ON l.campaignId = c.id \
             WHERE c.url = ? ORDER BY time DESC LIMIT 20;`;
-        dao.query(sql, url)
+        return dao.query(sql, [url])
             .then(({results}) => results[Math.floor(results.length * rand)])
             .then(l => {
-                const message = Lead.genMessage(l.first, l.last, l.city);
+                const msg = Lead.genMessage(l.first, l.last, l.city);
                 const time = Lead.genTime(l.time);
                 return {msg, time};
-            })
+            });
     }
 
-    static post(lead) {
+    static post(lead, url) {
         let sql = `INSERT INTO leads (campaignId, ip, first, last, email, city, region, country) VALUES \
             (?, ?, ?, ?, ?, ?, ?, ?)`;
         return axios.get('http://api.ipstack.com/' + lead.getIp() + '?access_key=' + config.ipstack)
             .then(({data}) => {
                 const {region_name, country_name, city} = data;
-                if(!region_name || !country_name || !city) throw 'Missing info';
+    
                 lead.set('city', city);
                 lead.set('region', region_name);
                 lead.set('country', country_name);
-                console.log(lead.getValues());
             })
+            .then(() => Campaigns.getIdByUrl(url))
+            .then(id => lead.set('campaignId', id))
             .then(() => dao.query(sql, lead.getValues()))
             .then(({results}) => results);
     }

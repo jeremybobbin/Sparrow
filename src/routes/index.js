@@ -17,7 +17,7 @@ const verify = (req, res, next) => {
 }
 
 router.use('/campaigns', verify, require('./campaigns'));
-router.use('/leads', verify, require('./leads'));
+router.use('/leads', require('./leads'));
 router.use('/user', require('./user'));
 
 module.exports = router;

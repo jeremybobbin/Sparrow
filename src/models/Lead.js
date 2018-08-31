@@ -2,8 +2,8 @@ module.exports = class Leads {
     constructor(id, ip, first, last, campaignId, email, city, region, country, time) {
         this.id = id;
         this.ip = ip;
-        this.first = first;
-        this.last = last;
+        this.firstname = first;
+        this.lastname = last;
         this.email = email;
         this.city = city;
         this.region = region;
@@ -25,8 +25,8 @@ module.exports = class Leads {
         return [
             this.campaignId,
             this.ip,
-            this.first,
-            this.last,
+            this.firstname,
+            this.lastname,
             this.email,
             this.city,
             this.region,
@@ -66,12 +66,12 @@ module.exports = class Leads {
         const day = divRound(hour, 24);
         return timeMsg(day, 'day')
     }
-    
-    static timeMsg(count, unit) {
-        return count + ' ' + unit + (count > 1 ? 's' : '') + ' ago';
-    }
+}
 
-    static divRound(top, bot) {
-        return Math.round(top / bot);
-    }
+function timeMsg(count, unit) {
+    return count + ' ' + unit + (count > 1 ? 's' : '') + ' ago';
+}
+
+function divRound(top, bot) {
+    return Math.round(top / bot);
 }

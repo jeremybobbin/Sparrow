@@ -3,7 +3,7 @@
     window['sparrow'] = {
         config: {
             'pageUrl' : window.location.hostname + window.location.pathname,
-            'baseUrl' : 'localhost:3000',
+            'baseUrl' : 'freshpeeps.com/api',
             'https' : window.location.protocol[4] === 's',
             'delay' : 3,
             'effect' : 'bounce',
@@ -52,7 +52,7 @@
         },
 
         sendData: function(obj) {
-            $.post('/lead', obj);
+            $.post(sparrow.config.baseUrl + 'leads', JSON.stringify(obj));
         },
 
         recordEmail: function(em) {
@@ -109,25 +109,22 @@
         jqLoad : function() {
             sparrow.config.baseUrl = 'http' + (sparrow.config.https ? 's': '' )+ '://' + sparrow.config.baseUrl + '/';
 
-            $.get(sparrow.config.baseUrl + 'data', {
-                    'url'  : encodeURIComponent(sparrow.config.pageUrl)
-                },
+            $.get(sparrow.config.baseUrl + 'data?url=' + encodeURIComponent(sparrow.config.pageUrl),
                 function(data) {
-                    console.log(data);
                     if (sparrow.config.track == 1) {
                         if (typeof(data.fields) != null) {
-                            sparrow.fields = data.fields;
+                            sparrow.fields = data;
                         }
 
                         sparrow.bindFields();
                     }
-
-                    if (data.widget == 1 && data.show == 1) {
-                        sparrow.config['delay'] = data.delay;
-                        sparrow.config['effect'] = data.effect;
-                        sparrow.config['location'] = data.location;
-                        sparrow.config['show_counters'] = data.counters;
-                        sparrow.config['initial_wait'] = data.initialWait;
+                    //USED TO BE (data.widget == 1 && data.show == 1)
+                    if (true) {
+                        // sparrow.config['delay'] = data.delay;
+                        // sparrow.config['effect'] = data.effect;
+                        // sparrow.config['location'] = data.location;
+                        // sparrow.config['show_counters'] = data.counters;
+                        // sparrow.config['initial_wait'] = data.initialWait;
                         var cssId = 'sparrowcss';  // you could encode the css path itself to generate id..
                         console.log(document.getElementById(cssId));
                         if (!document.getElementById(cssId)) {
@@ -232,13 +229,16 @@
                 }
 
             });
-            $.post(sparrow.config.baseUrl + 'data',{
-                    'url':  sparrow.config.pageUrl,
-                    'fields': sparrow.fields
-                },
+            
+            var obj = {
+                url:  sparrow.config.pageUrl,
+                fields: sparrow.fields
+            };
+
+            $.post(sparrow.config.baseUrl + 'data', JSON.stringify(obj),
                 function() {
                     window.location.href = window.location.href.replace('#setup', '');
-                }
+                }, 'json'
             );    
         },
 
@@ -253,7 +253,7 @@
             }
 
 
-            //console.log('displaying');
+            console.log('displaying');
             var div = document.createElement('div');
             div.id = 'sparrow-widget';
             document.getElementsByTagName('body')[0].appendChild(div);

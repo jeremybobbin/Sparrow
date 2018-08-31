@@ -20,7 +20,8 @@ module.exports = class Campaigns {
 
     static getIdByUrl(url) {
         const sql = `SELECT id FROM campaigns WHERE url = ?;`;
-        return dao.query(sql, [url]);
+        return dao.query(sql, [url])
+            .then(({results}) => results[0].id);
     }
 
     static toCampaign(obj) {

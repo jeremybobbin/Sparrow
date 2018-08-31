@@ -1,10 +1,7 @@
-const axios = require('axios');
+const pug = require('pug');
 const express = require('express');
 const bodyParser = require('body-parser');
-const pug = require('pug');
-
-const conf = require('./config');
-const drup = require('./models/DrupalServer');
+const path = require('path');
 
 const Campaigns = require('./models/Campaigns');
 const Fields = require('./models/Fields');
@@ -14,8 +11,11 @@ const Lead = require('./models/Lead');
 const app = express();
 
 app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
+
 
 app.use((req, res, next) => {
+
     res.header('Access-Control-Allow-Origin', '*');
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, authorization, X-CSRF-Token, Session");
     res.append('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 
 app.enable('trust proxy');
 
-app.use(express.static(__dirname + '/public'))
+app.use(express.static(__dirname + '/public'));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -32,18 +32,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(require('./routes'));
 
 app.get('/script', (req, res) => res.sendFile(__dirname + '/public/sparrow.js'));
-
-
-// Route for posting data about form fields
-app.post('/data', (req, res) => {
-    if(!req.body.fields) return;
-
-    const {firstname, lastname, email} = req.body.fields;
-
-    Fields.set(firstname.name, lastname.name, email.name, firstname.id, lastname.id, email.id)
-        .then(r => res.sendStatus(200))
-        .catch(err => res.sendStatus(500));
-});
 
 
 // Route for posting data about the lead
@@ -62,11 +50,23 @@ app.post('/lead', (req, res) => {
 
 
 
+// Route for posting data about form fields
+app.post('/data', (req, res) => {
+    if(!req.body.fields) return;
+
+    const {firstname, lastname, email} = req.body.fields;
+
+    Fields.set(req.body.url, firstname.name, lastname.name, email.name, firstname.id, lastname.id, email.id)
+        .then(r => res.json(r))
+        .catch(err => res.json(err));
+});
+
+
 // Route for getting data about the form fields
-router.get('/data', (req, res) => {
-    verify(req, res)
-        .then(r => dao.getData(decodeURIComponent(req.query.url))
-            .then(r => res.json(r)));
+app.get('/data', (req, res) => {
+    Fields.get(decodeURIComponent(req.query.url))
+            .then(r => res.json(r))
+            .catch(r => res.json(r));
 });
 
 // Route to render widget.
@@ -74,9 +74,12 @@ app.get('/widget', (req, res) => {
 
     const url = decodeURIComponent(req.query.url);
 
-    Leads.getOneFormatted(url, req.ruery.r)
-        .then(({msg, time}) => res.render('widget', {msg, time}))
-        .catch(err => res.sendStatus(500));
+    Leads.getOneFormatted(url, req.query.r)
+        .then(({msg, time}) => {
+            console.log('Rendering');
+            res.render('widget.pug', {msg, time});
+        })
+        .catch(err => console.log(err));
 });
 
 app.get('/throw', (req, res) => {

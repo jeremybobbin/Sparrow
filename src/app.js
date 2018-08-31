@@ -22,6 +22,8 @@ app.use((req, res, next) => {
     next();
 });
 
+app.enable('trust proxy');
+
 app.use(express.static(__dirname + '/public'))
 
 app.use(bodyParser.json());
@@ -58,6 +60,14 @@ app.post('/lead', (req, res) => {
         .catch(() => res.sendStatus(500));
 });
 
+
+
+// Route for getting data about the form fields
+router.get('/data', (req, res) => {
+    verify(req, res)
+        .then(r => dao.getData(decodeURIComponent(req.query.url))
+            .then(r => res.json(r)));
+});
 
 // Route to render widget.
 app.get('/widget', (req, res) => {

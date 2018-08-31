@@ -1,16 +1,11 @@
 require('dotenv').config();
-let defaults = {
-    'DB_NAME': 'sparrow',
-    'DB_USER': 'root',
-    'DB_PASSWORD': '',
-    'PORT': 3001
-};
-const get = (prop) => defaults[prop] || process.env[prop];
+
+const get = (prop) => process.env[prop];
 
 const config = {};
 
 
-config.ipstack = 'e33648ff142853941b239503f1e8996e';
+config.ipstack = get('IPSTACK_API_KEY');
 
 config.mySql = {
     database: get('DB_NAME'),

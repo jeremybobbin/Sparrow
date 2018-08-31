@@ -4,6 +4,7 @@ const Campaign = require('./Campaign');
 module.exports = class Campaigns {
 
     static get(userId) {
+        console.log('User ID:  ' + userId);
         const sql = `SELECT c.id AS id, name, url, enabled, tracking, delay, effect, location, \
             counters, message, initialWait, COUNT(l.id) AS leads \
             FROM campaigns AS c \
@@ -25,7 +26,12 @@ module.exports = class Campaigns {
     static toCampaign(obj) {
         if(obj === undefined || obj === null) return;
         let c = new Campaign();
-        Object.keys(obj).forEach(k => c.set(k, obj[k]));
+        console.log('OBJ:  ');
+        console.log(obj)
+        Object.keys(obj).forEach(k => {
+            c.set(k, obj[k]);
+            console.log(k);
+        });
         return c;
     }
 

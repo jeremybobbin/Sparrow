@@ -1,5 +1,7 @@
 const metaphone = require('metaphone');
+const axios = require('axios');
 
+const config = require('../config');
 const Lead = require('./Lead');
 const dao = require('./Dao');
 
@@ -9,6 +11,9 @@ module.exports = class Leads {
         if(limit > 100) throw new Error('Limit is too high.');
         let sql = `SELECT id, ip, first, last, email, city, region, country, time FROM leads \
                     WHERE campaignId = ? LIMIT ? OFFSET ?;`;
+        cId = Number.parseInt(cId);
+        limit = Number.parseInt(limit);
+        offset = Number.parseInt(offset);
         return dao.query(sql, [cId, limit, offset])
             .then(({results}) => results);
     }
@@ -34,9 +39,18 @@ module.exports = class Leads {
     }
 
     static post(lead) {
-        let sql = `INSERT INTO leads (campaignId, first, last, email, city, region, country) VALUES \
-            (?, ?, ?, ?, ?, ?, ?)`;
-        return dao.query(sql, lead.getValues())
+        let sql = `INSERT INTO leads (campaignId, ip, first, last, email, city, region, country) VALUES \
+            (?, ?, ?, ?, ?, ?, ?, ?)`;
+        return axios.get('http://api.ipstack.com/' + lead.getIp() + '?access_key=' + config.ipstack)
+            .then(({data}) => {
+                const {region_name, country_name, city} = data;
+                if(!region_name || !country_name || !city) throw 'Missing info';
+                lead.set('city', city);
+                lead.set('region', region_name);
+                lead.set('country', country_name);
+                console.log(lead.getValues());
+            })
+            .then(() => dao.query(sql, lead.getValues()))
             .then(({results}) => results);
     }
 

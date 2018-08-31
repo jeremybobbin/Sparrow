@@ -14,12 +14,6 @@ router.post('/logout', (req, res) => {
         .then(r => res.json(r));
 });
 
-router.get('/data', (req, res) => {
-    verify(req, res)
-        .then(r => dao.getData(decodeURIComponent(req.query.url))
-            .then(r => res.json(r)));
-});
-
 
 router.post('/info', (req, res) => {
     drup.getUserInfo(req.get('Session'), req.get('X-CSRF-Token'))

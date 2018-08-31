@@ -20,11 +20,11 @@ $apiUrl = 'http://localhost:3000';
 $uri = $_SERVER['REQUEST_URI'];
 $verb = $_SERVER['REQUEST_METHOD'];
 
-$body = json_decode(file_get_contents('php://input'), true);
+parse_str(file_get_contents("php://input"),$post_vars);
 
 if(strpos($uri, '/api') === 0) {
     $path = $apiUrl . substr($uri, 4);
-    echo request($path, $verb, getallheaders(), json_encode($body));
+    echo request($path, $verb, getallheaders(), $post_vars);
 } else {
     echo request($apiUrl . '/lost', 'get', array(), null);
 }

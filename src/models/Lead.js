@@ -14,11 +14,17 @@ module.exports = class Leads {
 
     set(k, v) {
         this[k] = v;
+        return this;
+    }
+
+    getIp () {
+        return this.ip;
     }
 
     getValues() {
         return [
             this.campaignId,
+            this.ip,
             this.first,
             this.last,
             this.email,

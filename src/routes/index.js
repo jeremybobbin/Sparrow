@@ -5,10 +5,11 @@ const drup = require('../models/DrupalServer');
 const verify = (req, res, next) => {
     const session = req.get('Session');
     const token = req.get('X-CSRF-Token');
-    console.log('SESSION:   ' +session);
-    console.log(req.headers);
+    console.log(req.baseUrl);
+    if(req.baseUrl === '/leads' && req.method == 'POST') return next();
     drup.verify(session, token)
         .then(r => {
+            console.log('place');
             if(r) req.userId = r;
             else return res.sendStatus(401);
             next();
@@ -20,3 +21,4 @@ router.use('/leads', verify, require('./leads'));
 router.use('/user', require('./user'));
 
 module.exports = router;
+

@@ -27,7 +27,7 @@ const init = [
         `message` VARCHAR(255), \
         `delay` TINYINT NOT NULL DEFAULT 3, \
         `effect` VARCHAR(255) DEFAULT "fade" , \
-        `location` VARCHAR(255) NOT NULL DEFAULT "bottom-left", \
+        `location` TINYINT NOT NULL DEFAULT 0, \
         `counters` BOOLEAN NOT NULL DEFAULT FALSE, \
         `initialWait` TINYINT DEFAULT 3, \
         PRIMARY KEY(id) \

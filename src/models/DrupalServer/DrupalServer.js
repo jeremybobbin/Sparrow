@@ -71,10 +71,12 @@ module.exports = class DrupalServer {
         return this.request('user/login', {username, password})
             .then(r => {
                 this.csrf = r.data.token;
+                console.log(r);
                 if(r.data && r.data.user) return {
                     token: r.data.token,
                     session: r.data.session_name + '=' + r.data.sessid,
                     email: r.data.user.mail,
+                    username: r.data.user.name
                 };
                 else throw 'Could not find user ID.';
             })
@@ -94,6 +96,7 @@ module.exports = class DrupalServer {
         return this.request('system/connect', null, headers)
             .then(r => {
                 if(r.data && r.data.user) {
+                    if(r.data.message) throw r.data.message;
                     if(r.data.user.uid === 0) throw 'Invalid Session.';
                     else return {
                         username: r.data.user.name,

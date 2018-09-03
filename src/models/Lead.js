@@ -50,8 +50,9 @@ module.exports = class Leads {
     }
     
     static genTime(time) {
+
         if(!time) return 'Some time ago';
-        const dif = divRound(new Date().getTime(), 1000) - time;
+        const dif = divRound((new Date().getTime() - time), 1000) ;
         if (dif < 60) {
             return timeMsg(dif, 'second');
         }

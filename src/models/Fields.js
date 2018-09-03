@@ -5,26 +5,64 @@ module.exports = class Fields {
 
         if(url === null || url === undefined) throw 'Null URL';
 
-        const sql = `SELECT n.first AS firstName, n.last AS lastName, \
-            n.email AS emailName, i.first AS firstId, i.last as lastId, \
-            i.email AS emailId FROM formNames AS n \
+        const sql = `SELECT \
+                n.first AS firstName, \
+                n.last AS lastName, \
+                n.email AS emailName, \
+                i.first AS firstId, \
+                i.last as lastId, \
+                i.email AS emailId, \
+                enabled, \
+                tracking, \
+                message, \
+                delay, \
+                effect, \
+                location, \
+                counters, \
+                initialWait \
+                FROM formNames AS n \
             JOIN formIds AS i ON n.campaignId = i.campaignId \
             JOIN campaigns AS c ON i.campaignId = c.id \
             WHERE c.url = ?;`;
         return dao.query(sql, [url])
             .then(({results}) => results[0])
-            .then(({firstName, lastName, emailName, firstId, lastId, emailId}) => ({
-                firstname: {
-                    id: firstId,
-                    name: firstName
-                },
-                lastname: {
-                    id: lastId,
-                    name: lastName
-                },
-                email: {
-                    id: emailId,
-                    name: emailName
+            .then(({
+                firstName,
+                lastName,
+                emailName,
+                firstId,
+                lastId,
+                emailId,
+                enabled,
+                tracking,
+                message,
+                delay,
+                effect,
+                location,
+                counters,
+                initialWait
+            }) => ({
+                enabled,
+                tracking,
+                message,
+                delay,
+                effect,
+                location,
+                counters,
+                initialWait,
+                fields: {
+                    firstname: {
+                        id: firstId,
+                        name: firstName
+                    },
+                    lastname: {
+                        id: lastId,
+                        name: lastName
+                    },
+                    email: {
+                        id: emailId,
+                        name: emailName
+                    }
                 }
             }));
     }

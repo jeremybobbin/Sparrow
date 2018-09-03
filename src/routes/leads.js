@@ -3,7 +3,7 @@ const router = require('express').Router();
 const Leads = require('../models/Leads');
 
 
-router.get('/', (req, res) => Leads.get(req.query.id, req.query.limit, req.query.offset)
+router.get('/', (req, res) => Leads.get(req.query.id, req.query.limit, req.query.offset, req.userId)
     .then(r => res.json(r))
     .catch((e) => res.sendStatus(500)));
 

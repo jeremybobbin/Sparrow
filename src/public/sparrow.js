@@ -7,11 +7,8 @@
             'https' : window.location.protocol[4] === 's',
             'delay' : 3,
             'effect' : 'bounce',
-            'initial_wait' : 2,
-            'show' : 1,
             'track' : 1,
             'widget' : 1,
-            'show_counters': 0,
             'location': 'bottom-left'
         },
 
@@ -113,19 +110,20 @@
                 function(data) {
                     if (sparrow.config.track == 1) {
                         if (typeof(data.fields) != null) {
-                            sparrow.fields = data;
+                            sparrow.fields = data.fields;
                         }
 
                         sparrow.bindFields();
                     }
                     //USED TO BE (data.widget == 1 && data.show == 1)
-                    if (true) {
-                        // sparrow.config['delay'] = data.delay;
-                        // sparrow.config['effect'] = data.effect;
-                        // sparrow.config['location'] = data.location;
-                        // sparrow.config['show_counters'] = data.counters;
-                        // sparrow.config['initial_wait'] = data.initialWait;
-                        var cssId = 'sparrowcss';  // you could encode the css path itself to generate id..
+                    if (data.enabled === 1) {
+                        console.log('In here now');
+                        sparrow.config['delay'] = data.delay;
+                        sparrow.config['effect'] = data.effect;
+                        sparrow.config['location'] = data.location;
+                        sparrow.config['counters'] = data.counters;
+                        sparrow.config['initialWait'] = data.initialWait;
+                        var cssId = 'sparrowcss';
                         console.log(document.getElementById(cssId));
                         if (!document.getElementById(cssId)) {
                             var head  = document.getElementsByTagName('head')[0];
@@ -243,8 +241,7 @@
         },
 
         displayWidget: function() {
-            console.log('displaying widget');
-            if (sparrow.config.show == 0) {
+            if (sparrow.config.enabled == 1) {
                 setTimeout(function(){
                     sparrow.displayWidget();
                 }, sparrow.config.delay * 1000);
@@ -253,7 +250,6 @@
             }
 
 
-            console.log('displaying');
             var div = document.createElement('div');
             div.id = 'sparrow-widget';
             document.getElementsByTagName('body')[0].appendChild(div);
@@ -278,19 +274,19 @@
                 .html('<iframe frameborder="no"  scrolling="no" style="width: 100%; height: 100%;" src="' + widgetUrl + '"></iframe>');
 
             switch (sparrow.config.location) {
-                case 'bottom-right':
+                case '3':
                     $('#sparrow-widget').css('bottom', 55).css('right', 40);
                     break;
 
-                case 'top-left':
+                case '0':
                     $('#sparrow-widget').css('top', 55).css('left', 40);
                     break;
 
-                case 'top-right':
+                case '1':
                     $('#sparrow-widget').css('top', 55).css('right', 40);
                     break;
 
-                case 'bottom-left':
+                case '2':
                 default:
                     $('#sparrow-widget').css('bottom', 55).css('left', 40);
                     break;

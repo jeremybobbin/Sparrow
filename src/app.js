@@ -75,9 +75,9 @@ app.get('/widget', (req, res) => {
     const url = decodeURIComponent(req.query.url);
 
     Leads.getOneFormatted(url, req.query.r)
-        .then(({msg, time}) => {
+        .then(({leadString, time, message}) => {
             console.log('Rendering');
-            res.render('widget.pug', {msg, time});
+            res.render('widget.pug', {leadString, message, time});
         })
         .catch(err => console.log(err));
 });

@@ -27,7 +27,7 @@ if ($method !== 'GET')
          curl_setopt($ch, CURLOPT_POST, TRUE);
     }
 
-    if($method == '\DELETE') {
+    if($method == 'DELETE') {
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
     }
 
@@ -51,14 +51,35 @@ if(isset($headers['X-CSRF-Token'])) {
     $extraHeaders[] = 'X-CSRF-Token: '. str_replace($proxyDomain, $remoteDomain, $headers['X-CSRF-Token']);
 }
 
-if (isset($headers['Referer'])) 
-{
+if (isset($headers['Referer'])) {
     $extraHeaders[] = 'Referer: '. str_replace($proxyDomain, $remoteDomain, $headers['Referer']);
 }
-if (isset($headers['Origin'])) 
-{
+if (isset($headers['Origin'])) {
     $extraHeaders[] = 'Origin: '. str_replace($proxyDomain, $remoteDomain, $headers['Origin']);
 }
+
+function get_client_ip() {
+    $ipaddress = '';
+    if (isset($_SERVER['HTTP_CLIENT_IP']))
+        $ipaddress = $_SERVER['HTTP_CLIENT_IP'];
+    else if(isset($_SERVER['HTTP_X_FORWARDED_FOR']))
+        $ipaddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
+    else if(isset($_SERVER['HTTP_X_FORWARDED']))
+        $ipaddress = $_SERVER['HTTP_X_FORWARDED'];
+    else if(isset($_SERVER['HTTP_FORWARDED_FOR']))
+        $ipaddress = $_SERVER['HTTP_FORWARDED_FOR'];
+    else if(isset($_SERVER['HTTP_FORWARDED']))
+        $ipaddress = $_SERVER['HTTP_FORWARDED'];
+    else if(isset($_SERVER['REMOTE_ADDR']))
+        $ipaddress = $_SERVER['REMOTE_ADDR'];
+    else
+        $ipaddress = 'UNKNOWN';
+    return $ipaddress;
+}
+
+$extraHeaders[] = 'User-IP: '. str_replace($proxyDomain, $remoteDomain, get_client_ip());
+
+
 
 $extraHeaders[] = 'Content-Type: application/json';
 

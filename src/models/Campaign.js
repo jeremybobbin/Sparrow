@@ -1,10 +1,10 @@
 module.exports = class Campaign {
-    constructor(id, userId, name, url, enabled, tracking, message, delay, effect, location, counters, initialWait) {
+    constructor(id, userId, name, url, isEnabled, tracking, message, delay, effect, location, counters, initialWait) {
         this.id = id;
         this.userId = userId;
         this.name = name;
         this.url = url;
-        this.enabled = enabled;
+        this.isEnabled = isEnabled;
         this.tracking = tracking;
         this.message = message;
         this.delay = delay;
@@ -15,8 +15,8 @@ module.exports = class Campaign {
     }
 
     getValues() {
-        const {id, userId, name, url, enabled, tracking, message, delay, effect, location, counters, initialWait} = this;
-        return {id, userId, name, url, enabled, tracking, message, delay, effect, location, counters, initialWait};
+        const {id, userId, name, url, isEnabled, tracking, message, delay, effect, location, counters, initialWait} = this;
+        return {id, userId, name, url, isEnabled, tracking, message, delay, effect, location, counters, initialWait};
     }
 
     set(k, v) {
@@ -68,7 +68,7 @@ module.exports = class Campaign {
 // `id` INT NOT NULL AUTO_INCREMENT, userId INT NOT NULL, \
 // `name` VARCHAR(512) NOT NULL, \
 // `url` VARCHAR(512) NOT NULL, \
-// `enabled` BOOLEAN DEFAULT TRUE, \
+// `isEnabled` BOOLEAN DEFAULT TRUE, \
 // `tracking` BOOLEAN DEFAULT TRUE, \
 // `message` VARCHAR(512), \
 // `delay` TINYINT NOT NULL DEFAULT 3, \

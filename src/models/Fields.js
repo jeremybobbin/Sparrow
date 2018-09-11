@@ -79,3 +79,12 @@ module.exports = class Fields {
             .then(() => dao.query(setIds, [cId, firstId, lastId, emailId]));
     }
 }
+
+// `enabled` BOOLEAN DEFAULT TRUE, \
+// `tracking` BOOLEAN DEFAULT TRUE, \
+// `message` VARCHAR(255), \
+// `delay` TINYINT NOT NULL DEFAULT 3, \
+// `effect` VARCHAR(255) DEFAULT "fade" , \
+// `location` TINYINT NOT NULL DEFAULT 0, \
+// `counters` BOOLEAN NOT NULL DEFAULT FALSE, \
+// `initialWait` TINYINT DEFAULT 3, \

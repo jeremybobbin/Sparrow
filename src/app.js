@@ -2,6 +2,7 @@ const pug = require('pug');
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
+const { URL } = require('url');
 
 const Campaigns = require('./models/Campaigns');
 const Fields = require('./models/Fields');
@@ -12,16 +13,6 @@ const app = express();
 
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
-
-
-app.use((req, res, next) => {
-
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, authorization, X-CSRF-Token, Session");
-    res.append('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    next();
-});
-
 app.enable('trust proxy');
 
 app.use(express.static(__dirname + '/public'));
@@ -29,24 +20,46 @@ app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+
+app.use((req, res, next) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, authorization, Session, X-CSRF-Token, User-IP");
+    res.set('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    next();
+});
+
+app.use((req, res, next) => {
+    const {method, originalUrl} = req;
+    console.log(method + ' request for: ' + originalUrl + ' from ' + req.get('User-IP'));
+    next();
+});
+
+app.use((req, res, next) => {
+    const toParsedUrl = (url) => {
+        url = new URL(decodeURIComponent(url));
+        let path = url.pathname;
+        if(path[path.length - 1] == '/') path = path.slice(0, -1);
+
+        return url.origin + path;
+    }
+
+    const {body, query} = req;
+
+    if(body.hasOwnProperty('url')) {
+        req.body.url = toParsedUrl(body.url);
+    }
+    if(query.hasOwnProperty('url')) {
+        req.query.url = toParsedUrl(query.url);
+    }
+    
+    next();
+});
+
+
+
 app.use(require('./routes'));
 
 app.get('/script', (req, res) => res.sendFile(__dirname + '/public/sparrow.js'));
-
-
-// Route for posting data about the lead
-app.post('/lead', (req, res) => {
-
-    let {url, ip, firstname, lastname, email} = req.body;
-
-    Campaigns.getIdByUrl(url)
-        .then(campaignId => {
-            const lead = new Lead(null, ip, firstname, lastname, campaignId);
-            return Leads.putLead(lead);
-        })
-        .then(() => res.sendStatus(200))
-        .catch(() => res.sendStatus(500));
-});
 
 
 
@@ -55,8 +68,7 @@ app.post('/data', (req, res) => {
     if(!req.body.fields) return;
 
     const {firstname, lastname, email} = req.body.fields;
-
-    Fields.set(req.body.url, firstname.name, lastname.name, email.name, firstname.id, lastname.id, email.id)
+    Fields.set(url, firstname.name, lastname.name, email.name, firstname.id, lastname.id, email.id)
         .then(r => res.json(r))
         .catch(err => res.json(err));
 });
@@ -64,19 +76,15 @@ app.post('/data', (req, res) => {
 
 // Route for getting data about the form fields
 app.get('/data', (req, res) => {
-    Fields.get(decodeURIComponent(req.query.url))
+    Fields.get(req.query.url)
             .then(r => res.json(r))
             .catch(r => res.json(r));
 });
 
 // Route to render widget.
 app.get('/widget', (req, res) => {
-
-    const url = decodeURIComponent(req.query.url);
-
-    Leads.getOneFormatted(url, req.query.r)
+    Leads.getOneFormatted(req.query.url, req.query.r)
         .then(({leadString, time, message}) => {
-            console.log('Rendering');
             res.render('widget.pug', {leadString, message, time});
         })
         .catch(err => console.log(err));
@@ -90,5 +98,6 @@ function throwError() {
     let err= new Error('This is an error.');
     throw err;
 }
+
 
 module.exports = app;

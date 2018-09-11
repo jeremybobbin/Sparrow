@@ -9,7 +9,8 @@ router.get('/', (req, res) => Leads.get(req.query.id, req.query.limit, req.query
 
 router.post('/', (req, res) => {
     const lead = Leads.toLead(req.body);
-    lead.set('ip', req.ip === '::1' ? '67.204.145.178' : req.ip);
+    const ip = req.get('User-IP');
+    lead.set('ip', ip === '::1' ? '67.204.145.178' : ip);
     Leads.post(lead, req.body.url)
         .then(() => res.sendStatus(200))
         .catch(() => res.sendStatus(500));

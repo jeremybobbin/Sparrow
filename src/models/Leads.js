@@ -7,18 +7,15 @@ const Campaigns = require('./Campaigns');
 const dao = require('./Dao');
 
 module.exports = class Leads {
-    static get(cId, limit = 10, offset = 0, userId = null) {
+    static get(cId, limit = 10, offset = 0) {
+        if(cId === null || cId === undefined || cId === 'null') throw new Error('CampaignID is undefined');
         if(limit > 100) throw new Error('Limit is too high.');
-        let sql = cId ? `SELECT id, ip, first, last, email, city, region, country, time FROM leads \
-                    WHERE campaignId = ? LIMIT ? OFFSET ?;`
-                    :
-                    `SELECT id, ip, first, last, email, city, region, country, \
-                    time FROM leads AS l JOIN campaigns AS c ON l.campaignId = c.id \
-                    WHERE c.userId = ? LIMIT ? OFFSET ?;`;
+        let sql = `SELECT id, ip, first, last, email, city, region, country, time FROM leads \
+                    WHERE campaignId = ? LIMIT ? OFFSET ?;`;
         cId = Number.parseInt(cId);
         limit = Number.parseInt(limit);
         offset = Number.parseInt(offset);
-        return dao.query(sql, [cId || userId, limit, offset])
+        return dao.query(sql, [cId, limit, offset])
             .then(({results}) => results);
     }
 

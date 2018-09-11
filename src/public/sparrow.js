@@ -2,7 +2,7 @@
 
     window['sparrow'] = {
         config: {
-            'pageUrl' : window.location.hostname + window.location.pathname,
+            'pageUrl' : window.location.href,
             'baseUrl' : 'freshpeeps.com/api',
             'https' : window.location.protocol[4] === 's',
             'delay' : 3,

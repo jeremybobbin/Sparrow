@@ -57,37 +57,40 @@ module.exports = class DrupalServer {
     // If can register, returns sessionId, sessionName, uId ELSE returns Status Code
     register(name, mail, pass) {
         return this.request('user/register', {name, mail, pass})
-            .then(r => {
-                let cookieArray = r.headers['set-cookie'][0].split('; ');
-                let session = cookieArray[0];
-                return {session};
-            })
-            .catch(r => console.log(r.response.data.form_errors));
+            .then(res => {
+                if(!res.headers) throw 'No headers from Drupal server';
+                
+                const cookieArray = res.headers['set-cookie'][0].split('; ');
+                const session = cookieArray[0];
+                
+                return {
+                    session,
+                    username: name,
+                    email: mail
+		        };
+            });
     }
 
 
     // If Password is correct, returns sessionId, sessionName, uId and token, ELSE returns Status Code
     logIn(username, password) {
         return this.request('user/login', {username, password})
-            .then(r => {
-                this.csrf = r.data.token;
-                console.log(r);
-                if(r.data && r.data.user) return {
-                    token: r.data.token,
-                    session: r.data.session_name + '=' + r.data.sessid,
-                    email: r.data.user.mail,
-                    username: r.data.user.name
+            .then(({data}) => {
+		        this.csrf = data.token;
+                if(data && data.user) return {
+                    token: data.token,
+                    session: data.session_name + '=' + data.sessid,
+                    email: data.user.mail,
+                    username: data.user.name
                 };
                 else throw 'Could not find user ID.';
-            })
-            .catch(r => ({message: r.response.data[0]}));
+            });
     }
 
-    // IF LOGOUT SUCCESSFUL returns TRUE ELSE FALSE
-    logOut(session) {
-        return this.request('user/logout', null, {"Cookie": session})
-            .then(r => r[0])
-            .catch(r => false);
+    logOut(session, token) {
+        if(!session || !token) return Promise.reject();
+        const headers = {"Cookie": session, "X-CSRF-Token": token};
+        return this.request('user/logout', null, headers);
     }
 
     // If valid returns uId and SESSION ELSE FALSE
@@ -103,21 +106,19 @@ module.exports = class DrupalServer {
                         email: r.data.user.mail,
                     };   
                 }
-            })
-            .catch(e => false);
+            });
     }
 
     // Takes Session, if valid, returns uID ELSE FALSE.
     verify(session, token) {
         const headers = {"Cookie": session, "X-CSRF-Token": token};
+
         return this.request('system/connect', null, headers)
-            .then(r => {
-                if(r.data && r.data.user) {
-                    if(r.data.user.uid === 0) throw 'Invalid Session.';
-                    else return r.data.user.uid;   
-                }
-            })
-            .catch(e => false);
+            .then(({data}) => {
+                if(data.user && data.user.uid !== 0) return data.user.uid;   
+                else throw 'Could not verify';
+            
+            });
     }
 
 }

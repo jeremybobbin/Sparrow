@@ -6,17 +6,63 @@ const Lead = require('./Lead');
 const Campaigns = require('./Campaigns');
 const dao = require('./Dao');
 
+//     first: 'Jer',
+//     last: 'Top',
+//     ip: '6',
+//     email: 'jerbob@gmail.cock',
+//     city: 'Orlgnado',
+//     region: 'Canda',
+//     country: 'Candiadia', 
+//     time: '6'
+
 module.exports = class Leads {
-    static get(cId, limit = 10, offset = 0) {
-        if(cId === null || cId === undefined || cId === 'null') throw new Error('CampaignID is undefined');
-        if(limit > 100) throw new Error('Limit is too high.');
-        let sql = `SELECT id, ip, first, last, email, city, region, country, time FROM leads \
-                    WHERE campaignId = ? LIMIT ? OFFSET ?;`;
-        cId = Number.parseInt(cId);
-        limit = Number.parseInt(limit);
-        offset = Number.parseInt(offset);
-        return dao.query(sql, [cId, limit, offset])
-            .then(({results}) => results);
+    // returns {Pages: int, Leads: array}
+    static get(params, userId) {
+        if(!params.pageSize || !params.page || !userId) {
+            throw 'Need both page size and page number';
+        }
+        
+        const possible = [
+            'first', 'last', 'ip', 'email', 'city', 'region', 'country', 'time'
+        ];
+
+        const {pageSize, page} = params;
+
+        // Column by which to sort mapped to isDescending
+        const sortArray = [];
+
+        for(let key in params) {
+            if(possible.includes(key)) {
+                console.log(key, params[key]);
+                sortArray.push(
+                    key + (params[key] === 'desc' ? ' DESC' : ' ASC')
+                );
+            }
+        }
+
+        const whereArray = [
+            `userId = ${userId}`
+        ]
+        if(params.campaignId) {
+            whereArray.push(`campaignId = ${params.campaignId}`);
+        }
+
+        const order = sortArray.length ? 
+            'ORDER BY ' + sortArray.join(', ')
+            :
+            '';
+        
+        const where = `WHERE ${whereArray.join(' AND ')}`; 
+
+        const limit = `LIMIT ${pageSize} OFFSET ${pageSize * page}`;
+
+        const query = `SELECT ${possible.join(', ')} FROM leads \
+            ${where} ${order} ${limit};`
+
+        console.log(query);
+        return dao.query(query);
+
+
     }
 
     static toLead(obj) {
@@ -84,3 +130,13 @@ module.exports = class Leads {
             dao.query(sql, [string]);
     }
 }
+
+
+
+
+// id="leadid_tcpa_disclosure"
+
+// <input id="leadid_token" name="universal_leadid" type="hidden" style="display: none;" value=""/>
+
+// signup
+// cm

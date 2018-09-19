@@ -3,9 +3,11 @@ const router = require('express').Router();
 const Leads = require('../models/Leads');
 
 
-router.get('/', (req, res) => Leads.get(req.query.id, req.query.limit, req.query.offset, req.userId)
-    .then(r => res.json(r))
-    .catch((e) => res.sendStatus(500)));
+router.get('/', (req, res) => {
+    Leads.get(req.query, req.userId || 3)
+        .then(r => res.json(r))
+        .catch(e => res.sendStatus(500));
+});
 
 router.post('/', (req, res) => {
     const lead = Leads.toLead(req.body);

@@ -6,6 +6,11 @@ const verify = (req, res, next) => {
     const session = req.get('Session');
     const token = req.get('X-CSRF-Token');
     if(req.baseUrl === '/leads' && req.method == 'POST') return next();
+
+    //FOR DEBUGGING. REMOVE
+    return next();
+
+
     drup.verify(session, token)
         .then(r => {
             if(r) req.userId = r;

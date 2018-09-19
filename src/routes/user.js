@@ -5,7 +5,7 @@ router.post('/login', (req, res) => {
     const {username, password} = req.body;
     drup.logIn(username, password)
         .then(r => res.json(r))
-	    .catch(() => res.sendStatus(401));
+	.catch((err) => res.sendStatus(401));
 });
 
 router.post('/logout', (req, res) => {

@@ -16,10 +16,12 @@ const dao = require('./Dao');
 //     time: '6'
 
 module.exports = class Leads {
+
+
     // returns {Pages: int, Leads: array}
     static get(params, userId) {
         if(!params.pageSize || !params.page || !userId) {
-            throw 'Need both page size and page number';
+            throw 'Need both page size, page number and need to be logged in.';
         }
         
         const possible = [
@@ -28,12 +30,15 @@ module.exports = class Leads {
 
         const {pageSize, page} = params;
 
+        if(pageSize > 50 || pageSize < 1) {
+            throw 'Page size must be less than 50 and greater than 1';
+        }
+
         // Column by which to sort mapped to isDescending
         const sortArray = [];
 
         for(let key in params) {
             if(possible.includes(key)) {
-                console.log(key, params[key]);
                 sortArray.push(
                     key + (params[key] === 'desc' ? ' DESC' : ' ASC')
                 );
@@ -53,15 +58,24 @@ module.exports = class Leads {
             '';
         
         const where = `WHERE ${whereArray.join(' AND ')}`; 
-
+        const join = `INNER JOIN campaigns ON leads.campaignId = campaigns.id`;
         const limit = `LIMIT ${pageSize} OFFSET ${pageSize * page}`;
 
-        const query = `SELECT ${possible.join(', ')} FROM leads \
-            ${where} ${order} ${limit};`
+
+        const query = `SELECT ${possible.join(', ')} \
+            AS pages FROM leads \
+            ${join} ${where} ${order} ${limit};`
 
         console.log(query);
-        return dao.query(query);
-
+        
+        const rows = dao.query(query);
+        const pages = dao.query(`SELECT CEILING(COUNT(*) / ${pageSize}) AS pages FROM leads ${join} ${where};`);
+            
+        return Promise.all([rows, pages])
+            .then(([rowQuery, pageQuery]) => ({
+                rows: rowQuery.results,
+                pages: pageQuery.results[0].pages
+            }));
 
     }
 
@@ -130,13 +144,3 @@ module.exports = class Leads {
             dao.query(sql, [string]);
     }
 }
-
-
-
-
-// id="leadid_tcpa_disclosure"
-
-// <input id="leadid_token" name="universal_leadid" type="hidden" style="display: none;" value=""/>
-
-// signup
-// cm

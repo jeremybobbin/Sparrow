@@ -4,9 +4,9 @@ const Leads = require('../models/Leads');
 
 
 router.get('/', (req, res) => {
-    Leads.get(req.query, req.userId || 3)
+    Leads.get(req.query, req.userId)
         .then(r => res.json(r))
-        .catch(e => res.sendStatus(500));
+        .catch(e => console.log(e) && res.sendStatus(500));
 });
 
 router.post('/', (req, res) => {

@@ -19,7 +19,8 @@ const init = [
         `email` varchar(255) \
     ); ',
     'CREATE TABLE IF NOT EXISTS campaigns ( \
-        `id` INT NOT NULL AUTO_INCREMENT, userId INT NOT NULL, \
+        `id` INT NOT NULL AUTO_INCREMENT, \
+        `userId` INT NOT NULL, \
         `name` VARCHAR(255) NOT NULL, \
         `url` VARCHAR(255) NOT NULL, \
         `isEnabled` BOOLEAN DEFAULT TRUE, \
